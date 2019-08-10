@@ -128,4 +128,33 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.get("/:id/comments", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [post] = await db.findById(id);
+
+    if (!post) {
+      res.status(404).json({
+        message: "The post with the specified ID does not exist."
+      });
+      return;
+    }
+
+    const comments = await db.findPostComments(id);
+
+    res.status(200).json({
+      comments
+    });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({
+      error: "The comments information could not be found"
+    });
+  }
+});
+
+router.delete("/:id");
+router.put("/:id");
+
 module.exports = router;
