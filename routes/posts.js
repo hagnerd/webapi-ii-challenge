@@ -9,6 +9,7 @@ router.post("/", async (req, res) => {
     res.status(400).json({
       errorMessage: "Please provide title and contents for the post."
     });
+    return;
   }
 
   try {
@@ -31,6 +32,55 @@ router.post("/", async (req, res) => {
 
     res.status(500).json({
       error: "There was an error while saving the post to the database"
+    });
+  }
+});
+
+router.post("/:id/comments", async (req, res) => {
+  const { id } = req.params;
+  const { text } = req.body;
+
+  try {
+    // Because findById returns an array by default we want to destructure the
+    // first element to check if it is defined. An empty array in JS is
+    // technically truthy, but if it's an empty array array[0] will equal
+    // undefined.
+    const [post] = await db.findById(id);
+
+    if (!post) {
+      res.status(404).json({
+        message: "The post with the specified ID does not exist."
+      });
+      return;
+    }
+
+    if (!text) {
+      res.status(400).json({
+        errorMessage: "Please provide text for the comment"
+      });
+      return;
+    }
+
+    const { id: commentId } = await db.insertComment({
+      post_id: id,
+      text
+    });
+
+    const [comment] = await db.findCommentById(commentId);
+
+    if (!comment) {
+      res.status(404).json({
+        message: "The comment with the specified ID does not exist."
+      });
+      return;
+    }
+
+    res.status(201).json({
+      comment
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: "There was an error while saving the comment to the database"
     });
   }
 });
