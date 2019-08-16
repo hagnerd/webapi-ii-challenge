@@ -6,6 +6,7 @@ const server = express();
 
 // Allows us to parse the request body
 server.use(express.json());
+server.use(express.static(path.join(__dirname, 'client', 'build')))
 
 server.use("/api/posts", posts);
 
